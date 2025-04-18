@@ -1,0 +1,75 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: aws-load-balancer-webhook
+  labels:
+    app.kubernetes.io/name: aws-load-balancer-controller
+  annotations:
+    cert-manager.io/inject-ca-from: kube-system/aws-load-balancer-serving-cert
+webhooks:
+  - name: mpod.elbv2.k8s.aws
+    clientConfig:
+      service:
+        name: aws-load-balancer-controller-webhook-service
+        namespace: kube-system
+        path: /mutate-v1-pod
+    rules:
+      - operations: [ "CREATE" ]
+        apiGroups: [""]
+        apiVersions: ["v1"]
+        resources: ["pods"]
+    failurePolicy: Ignore
+    sideEffects: None
+    admissionReviewVersions: ["v1beta1"]
+  - name: mservice.elbv2.k8s.aws
+    clientConfig:
+      service:
+        name: aws-load-balancer-controller-webhook-service
+        namespace: kube-system
+        path: /mutate-v1-service
+    rules:
+      - operations: [ "CREATE" ]
+        apiGroups: [""]
+        apiVersions: ["v1"]
+        resources: ["services"]
+    failurePolicy: Fail
+    sideEffects: None
+    admissionReviewVersions: ["v1beta1"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: aws-load-balancer-webhook
+  labels:
+    app.kubernetes.io/name: aws-load-balancer-controller
+  annotations:
+    cert-manager.io/inject-ca-from: kube-system/aws-load-balancer-serving-cert
+webhooks:
+  - name: vingress.elbv2.k8s.aws
+    clientConfig:
+      service:
+        name: aws-load-balancer-controller-webhook-service
+        namespace: kube-system
+        path: /validate-networking-v1-ingress
+    rules:
+      - operations: [ "CREATE", "UPDATE" ]
+        apiGroups: ["networking.k8s.io"]
+        apiVersions: ["v1"]
+        resources: ["ingresses"]
+    failurePolicy: Fail
+    sideEffects: None
+    admissionReviewVersions: ["v1beta1"]
+  - name: vtargetgroupbinding.elbv2.k8s.aws
+    clientConfig:
+      service:
+        name: aws-load-balancer-controller-webhook-service
+        namespace: kube-system
+        path: /validate-elbv2-k8s-aws-v1beta1-targetgroupbinding
+    rules:
+      - operations: [ "CREATE", "UPDATE" ]
+        apiGroups: ["elbv2.k8s.aws"]
+        apiVersions: ["v1beta1"]
+        resources: ["targetgroupbindings"]
+    failurePolicy: Fail
+    sideEffects: None
+    admissionReviewVersions: ["v1beta1"]
