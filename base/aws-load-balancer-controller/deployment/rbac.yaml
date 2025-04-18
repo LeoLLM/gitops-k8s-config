@@ -1,0 +1,90 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: aws-load-balancer-controller
+  labels:
+    app.kubernetes.io/name: aws-load-balancer-controller
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - endpoints
+      - pods
+      - nodes
+      - services
+      - secrets
+      - namespaces
+      - events
+    verbs:
+      - get
+      - list
+      - watch
+      - patch
+  - apiGroups:
+      - extensions
+      - networking.k8s.io
+    resources:
+      - ingresses
+      - ingressclasses
+    verbs:
+      - get
+      - list
+      - watch
+      - patch
+      - update
+      - create
+  - apiGroups:
+      - networking.k8s.io
+    resources:
+      - ingressclassparams
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+  - apiGroups:
+      - elbv2.k8s.aws
+    resources:
+      - targetgroupbindings
+      - targetgroupbindings/status
+      - ingressclassparams
+    verbs:
+      - get
+      - list
+      - watch
+      - patch
+      - update
+      - create
+      - delete
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - get
+      - list
+      - watch
+      - patch
+      - update
+      - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: aws-load-balancer-controller
+  labels:
+    app.kubernetes.io/name: aws-load-balancer-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: aws-load-balancer-controller
+subjects:
+  - kind: ServiceAccount
+    name: aws-load-balancer-controller
+    namespace: kube-system
