@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../../base/aws-load-balancer-controller
+
+patches:
+  - path: patches/deployment-patch.yaml
+    target:
+      kind: Deployment
+      name: aws-load-balancer-controller
+
+configMapGenerator:
+  - name: aws-load-balancer-controller-config
+    behavior: merge
+    literals:
+      - cluster-name=prod-cluster
